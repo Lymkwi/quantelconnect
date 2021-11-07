@@ -1,0 +1,12 @@
+[package]
+name = "quantelconnect"
+version = "0.1.0"
+authors = ["Lymkwi <lymkwi@vulpinecitrus.info>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+reqwest={version="*", features=["cookies","blocking"]}
+clap="*"
+kuchiki="*"
