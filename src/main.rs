@@ -4,9 +4,9 @@ extern crate kuchiki;
 
 use clap::{Arg, App};
 use reqwest::header;
-use kuchiki::traits::*;
+use kuchiki::traits::TendrilSink;
 
-fn parse_html(data: String) -> Result<String, Box<dyn std::error::Error>> {
+fn parse_html(data: String) -> String {
     // Descend down into the form
     let document = kuchiki::parse_html().one(data);
     let mut underscore_token = String::new();
@@ -20,10 +20,10 @@ fn parse_html(data: String) -> Result<String, Box<dyn std::error::Error>> {
             }    
         }
     }
-    Ok(underscore_token)
+    underscore_token
 }
 
-fn connect(username: String, password: String, confirm_other_cons: bool)
+fn connect(username: &str, password: &str, confirm_other_cons: bool)
     -> Result<bool, Box<dyn std::error::Error>> {
     // Step 0 : Build the Reqwest client
     // Default headers list
@@ -43,12 +43,12 @@ fn connect(username: String, password: String, confirm_other_cons: bool)
         .text()?;
     println!("Obtained login page \u{2713}");
     // Step 2 : Retrieve login form token
-    let underscore_token = parse_html(res1)?;
+    let underscore_token = parse_html(res1);
     println!("Found underscore token : {}", underscore_token);
     // Step 3 : POST request
     let params: [(&str, &str);4] = [
-        ("_token", &underscore_token), ("email", username.as_str()),
-        ("password", password.as_str()),
+        ("_token", &underscore_token), ("email", username),
+        ("password", password),
         ("confirm_other_connections",
              if confirm_other_cons { "on" } else { "off" })
     ];
@@ -70,7 +70,7 @@ fn connect(username: String, password: String, confirm_other_cons: bool)
 
 fn main() {
     let args = App::new("QuantelConnect")
-        .version("0.1")
+        .version("0.2")
         .author("Lux A. Phifollen <limefox@vulpinecitrus.info>")
         .about("Command line utility to automatically connect to the QuanticTelecom captive portal")
         .arg(Arg::with_name("username")
@@ -105,12 +105,12 @@ fn main() {
     }
     let pass: String = String::from(passopt.unwrap());
 
-    let coc: bool = args.is_present("confirm_other_connections");
+    let force: bool = args.is_present("confirm_other_connections");
 
-    match connect(login, pass, coc) {
+    match connect(&login, &pass, force) {
         Ok(true)  => println!("Succesfully connected \u{2713}"),
         Ok(false) => {
-            "Failed to connect \u{2717}";
+            println!("Failed to connect \u{2717}");
             std::process::exit(1);
         },
         Err(e)    => {
