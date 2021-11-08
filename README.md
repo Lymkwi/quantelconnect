@@ -10,6 +10,12 @@ in the command line (yikes) as follows
 ./quantelconnect -u email@example.com -p mypassword1sSh!t
 ```
 
+When you are connecting on a new ethernet port, Quantic will ask you to confirm that you do indeed want
+to connect on that port and disconnect every other port. The "force" parameter can be used to do so
+```
+./quantelconnect -u email@example.com -p mypassword1sSh!t -f
+```
+
 ## TODO
 
 The following features will *eventually* be added

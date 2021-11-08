@@ -86,9 +86,8 @@ fn main() {
              .help("Password for the captive portal account")
              .takes_value(true))
         .arg(Arg::with_name("confirm_other_connections")
-             .short("c")
-             .long("confirm other connections")
-             .value_name("coc")
+             .short("f")
+             .long("force")
              .help("Confirm that you wish to disconnect other devices"))
         .get_matches();
 
