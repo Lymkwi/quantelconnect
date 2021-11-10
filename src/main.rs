@@ -6,6 +6,11 @@ use clap::{Arg, App};
 use reqwest::header;
 use kuchiki::traits::TendrilSink;
 
+const QUANTIC_DOMAIN: &str = "https://www.quantic-telecom.net";
+const QUANTIC_ENDPOINT: &str = "/connexion-reseau";
+const QUANTIC_PORTAL: &str = "https://www.quantic-telecom.net/connexion-reseau";
+const QUANTIC_ACCOUNT: &str = "https://www.quantic-telecom.net/compte";
+
 fn parse_html(data: String) -> String {
     // Descend down into the form
     let document = kuchiki::parse_html().one(data);
@@ -38,7 +43,7 @@ fn connect(username: &str, password: &str, confirm_other_cons: bool)
         .build()
         .unwrap();
     // Step 1 : Fetch connection page
-    let res1 = client.get("https://www.quantic-telecom.net/connexion-reseau")
+    let res1 = client.get(QUANTIC_PORTAL)
         .send()?
         .text()?;
     println!("Obtained login page \u{2713}");
@@ -52,16 +57,16 @@ fn connect(username: &str, password: &str, confirm_other_cons: bool)
         ("confirm_other_connections",
              if confirm_other_cons { "on" } else { "off" })
     ];
-    let res2 = client.post("https://www.quantic-telecom.net/connexion-reseau")
+    let res2 = client.post(QUANTIC_PORTAL)
         .form(&params)
         .header("Connection", "close")
-        .header("Referer", "https://www.quantic-telecom.net/connexion-reseau")
-        .header("Origin", "https://www.quantic-telecom.net")
-        .header("Filename", "/connexion-reseau")
+        .header("Referer", QUANTIC_PORTAL)
+        .header("Origin", QUANTIC_DOMAIN)
+        .header("Filename", QUANTIC_ENDPOINT)
         .send()?;
     println!("POST made (Status {})", res2.status());
     // Step 4 : Check by fetching account page
-    let res3 = client.get("https://www.quantic-telecom.net/compte")
+    let res3 = client.get(QUANTIC_ACCOUNT)
         .send()?
         .text()?;
     // If it contains that string (which is a comment on the page) it's done
