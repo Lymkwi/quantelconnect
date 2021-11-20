@@ -19,13 +19,14 @@ to connect on that port and disconnect every other port. The "force" parameter c
 ## TODO
 
 The following features will *eventually* be added
- - [ ] Ability to load configuration from file
+ - [x] Ability to load configuration from file
 
 ## Dependency
 
 This program uses [`reqwest`](https://lib.rs/crates/reqwest) to handle all of
 the network interaction, [`clap`](https://lib.rs/crates/clap) to parse and
 access command line arguments, and [`kuchiki`](https://lib.rs/crates/kuchiki) to parse and navigate HTML source code.
+It also uses [`tini`](https://lib.rs/crate/tini) to paste the INI configuration file given in argument.
 
 ## License
 

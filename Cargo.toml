@@ -10,3 +10,4 @@ edition = "2018"
 reqwest={version="*", features=["cookies","blocking"]}
 clap="*"
 kuchiki="*"
+tini="*"

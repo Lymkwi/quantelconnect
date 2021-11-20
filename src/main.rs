@@ -2,6 +2,8 @@ extern crate reqwest;
 extern crate clap;
 extern crate kuchiki;
 
+mod config;
+
 use clap::{Arg, App};
 use reqwest::header;
 use kuchiki::traits::TendrilSink;
@@ -28,8 +30,11 @@ fn parse_html(data: String) -> String {
     underscore_token
 }
 
-fn connect(username: &str, password: &str, confirm_other_cons: bool)
+fn connect(config: &config::QConfig)
     -> Result<bool, Box<dyn std::error::Error>> {
+    let username = config.get_user();
+    let password = config.get_pass();
+    let confirm_other_cons = config.get_force();
     // Step 0 : Build the Reqwest client
     // Default headers list
     let headers: header::HeaderMap = header::HeaderMap::new();
@@ -73,9 +78,9 @@ fn connect(username: &str, password: &str, confirm_other_cons: bool)
     Ok(res3.contains("Static sidebar for desktop"))
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = App::new("QuantelConnect")
-        .version("0.2")
+        .version("0.2.1")
         .author("Lux A. Phifollen <limefox@vulpinecitrus.info>")
         .about("Command line utility to automatically connect to the QuanticTelecom captive portal")
         .arg(Arg::with_name("username")
@@ -94,32 +99,33 @@ fn main() {
              .short("f")
              .long("force")
              .help("Confirm that you wish to disconnect other devices"))
+        .arg(Arg::with_name("configuration")
+             .short("c")
+             .long("config")
+             .help("INI configuration file containing the credentials")
+             .takes_value(true))
         .get_matches();
 
-    let logopt: Option<&str> = args.value_of("username");
-    if logopt.is_none() {
-        eprintln!("ERROR: Missing user name. Aborting.");
-        std::process::exit(1);
-    }
-    let login: String = String::from(logopt.unwrap());
-
-    let passopt: Option<&str> = args.value_of("password");
-    if passopt.is_none() {
-        eprintln!("ERROR: Missing password. Aborting.");
-        std::process::exit(1);
-    }
-    let pass: String = String::from(passopt.unwrap());
-
-    let force: bool = args.is_present("confirm_other_connections");
-
-    match connect(&login, &pass, force) {
-        Ok(true)  => println!("Succesfully connected \u{2713}"),
-        Ok(false) => {
-            println!("Failed to connect \u{2717}");
-            std::process::exit(1);
+    // Read the configuration file
+    match config::QBuilder::new()
+            .from_file(args.value_of("configuration"))?
+            .set_user(args.value_of("username"))
+            .set_pass(args.value_of("password"))
+            .set_force(args.is_present("confirm_other_connections"))
+            .build() {
+        Ok(config) => match connect(&config) {
+            Ok(true)  => Ok(println!("Succesfully connected \u{2713}")),
+            Ok(false) => {
+                println!("Failed to connect \u{2717}");
+                std::process::exit(1);
+            },
+            Err(e)    => {
+                println!("Technical Error while connecting: {}", e);
+                std::process::exit(1);
+            }
         },
-        Err(e)    => {
-            println!("Technical Error while connecting: {}", e);
+        Err(e) => {
+            eprintln!("Err: {}", e);
             std::process::exit(1);
         }
     }
