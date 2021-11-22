@@ -13,24 +13,24 @@ const QUANTIC_ENDPOINT: &str = "/connexion-reseau";
 const QUANTIC_PORTAL: &str = "https://www.quantic-telecom.net/connexion-reseau";
 const QUANTIC_ACCOUNT: &str = "https://www.quantic-telecom.net/compte";
 
-fn parse_html(data: String) -> String {
+fn parse_html(data: String) -> Option<String> {
     // Descend down into the form
     let document = kuchiki::parse_html().one(data);
-    let mut underscore_token = String::new();
     for data in document.select("input").unwrap() {
         let elem = data.as_node().as_element().unwrap();
         // Get the name
         let attribs = elem.attributes.borrow();
         if let Some(name) = attribs.get("name") {
             if name == "_token" {
-                underscore_token.push_str(attribs.get("value").unwrap());
+                // There is only one underscore token
+                return attribs.get("value").map(|x| x.into());
             }    
         }
     }
-    underscore_token
+    None
 }
 
-fn connect(config: &config::QConfig)
+fn connect(config: &config::Values)
     -> Result<bool, Box<dyn std::error::Error>> {
     let username = config.get_user();
     let password = config.get_pass();
@@ -53,7 +53,7 @@ fn connect(config: &config::QConfig)
         .text()?;
     println!("Obtained login page \u{2713}");
     // Step 2 : Retrieve login form token
-    let underscore_token = parse_html(res1);
+    let underscore_token = parse_html(res1).ok_or("Underscore token not found. Most likely, you are trying to connect from outside of Quantic's range.")?;
     println!("Found underscore token : {}", underscore_token);
     // Step 3 : POST request
     let params: [(&str, &str);4] = [
@@ -108,13 +108,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Read the configuration file
     match config::QBuilder::new()
-            .from_file(args.value_of("configuration"))?
+            .read_file(args.value_of("configuration"))?
             .set_user(args.value_of("username"))
             .set_pass(args.value_of("password"))
             .set_force(args.is_present("confirm_other_connections"))
             .build() {
         Ok(config) => match connect(&config) {
-            Ok(true)  => Ok(println!("Succesfully connected \u{2713}")),
+            Ok(true)  => {
+                println!("Succesfully connected \u{2713}");
+                Ok(())
+            },
             Ok(false) => {
                 println!("Failed to connect \u{2717}");
                 std::process::exit(1);

@@ -2,13 +2,13 @@ extern crate tini;
 
 use tini::Ini;
 
-pub struct QConfig {
+pub struct Values {
     user: String,
     pass: String,
     force: bool
 }
 
-impl QConfig {
+impl Values {
     pub fn get_user(&self) -> &str { &self.user }
     pub fn get_pass(&self) -> &str { &self.pass }
     pub fn get_force(&self) -> bool { self.force }
@@ -22,16 +22,16 @@ pub struct QBuilder {
 }
 
 impl QBuilder {
-    pub fn build(self) -> Result<QConfig, String> {
+    pub fn build(self) -> Result<Values, String> {
         match self.user {
             Some(u) => match self.pass {
-                Some(p) => Ok(QConfig { user: u, pass: p, force: self.force }),
+                Some(p) => Ok(Values { user: u, pass: p, force: self.force }),
                 None => Err("Missing password. Aborting.".into())
             },
             None => Err("Missing user name. Aborting.".into())
         }
     }
-    pub fn from_file(mut self, file: Option<&str>)
+    pub fn read_file(mut self, file: Option<&str>)
         -> Result<QBuilder, Box<dyn std::error::Error>> {
         // Do the tini
         match file {
@@ -69,7 +69,7 @@ impl QBuilder {
     }
 }
 
-impl std::fmt::Display for QConfig {
+impl std::fmt::Display for Values {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
         write!(f, "Config(user={}, pass={}, force={})",
             self.user, self.pass, self.force)
