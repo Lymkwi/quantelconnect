@@ -4,7 +4,7 @@ extern crate kuchiki;
 
 mod config;
 
-use clap::{Arg, App};
+use clap::{Arg, Command};
 use reqwest::header;
 use kuchiki::traits::TendrilSink;
 
@@ -79,28 +79,28 @@ fn connect(config: &config::Values)
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let args = App::new("QuantelConnect")
+    let args = Command::new("QuantelConnect")
         .version("0.2.1")
         .author("Lux A. Phifollen <limefox@vulpinecitrus.info>")
         .about("Command line utility to automatically connect to the QuanticTelecom captive portal")
-        .arg(Arg::with_name("username")
-             .short("u")
+        .arg(Arg::new("username")
+             .short('u')
              .long("username")
              .value_name("login")
              .help("User name used to authenticate to the portal")
              .takes_value(true))
-        .arg(Arg::with_name("password")
-             .short("p")
+        .arg(Arg::new("password")
+             .short('p')
              .long("password")
              .value_name("pass")
              .help("Password for the captive portal account")
              .takes_value(true))
-        .arg(Arg::with_name("confirm_other_connections")
-             .short("f")
+        .arg(Arg::new("confirm_other_connections")
+             .short('f')
              .long("force")
              .help("Confirm that you wish to disconnect other devices"))
-        .arg(Arg::with_name("configuration")
-             .short("c")
+        .arg(Arg::new("configuration")
+             .short('c')
              .long("config")
              .help("INI configuration file containing the credentials")
              .takes_value(true))
