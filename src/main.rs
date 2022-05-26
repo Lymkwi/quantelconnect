@@ -1,3 +1,25 @@
+//! Quantel Connect
+//! 
+//! A simple command line utility to headlessly connect to the captive portal of Quantic Telecom
+// Make clippy quite nasty
+#![deny(clippy::cargo)]         // Checks for garbage in the Cargo TOML files
+#![deny(clippy::complexity)]    // Checks for needlessly complex structures
+#![deny(clippy::correctness)]   // Checks for common invalid usage and workarounds
+#![deny(clippy::nursery)]       // Checks for things that are typically forgotten by learners
+#![deny(clippy::pedantic)]      // Checks for mildly annoying comments it could make about your code
+#![deny(clippy::perf)]          // Checks for inefficient ways to perform common tasks
+#![deny(clippy::style)]         // Checks for inefficient styling of code
+#![deny(clippy::suspicious)]    // Checks for potentially malicious behaviour
+// Add some new clippy lints
+#![deny(clippy::use_self)]      // Checks for the use of a struct's name in its `impl`
+// Add some default lints
+#![deny(unused_variables)]      // Checks for unused variables
+// Deny missing documentation
+#![deny(missing_docs)]
+#![deny(rustdoc::missing_crate_level_docs)]
+// Actually allow that one because I can't control it
+#![allow(clippy::multiple_crate_versions)]
+
 extern crate reqwest;
 extern crate clap;
 extern crate kuchiki;
@@ -23,7 +45,7 @@ fn parse_html(data: String) -> Option<String> {
         if let Some(name) = attribs.get("name") {
             if name == "_token" {
                 // There is only one underscore token
-                return attribs.get("value").map(|x| x.into());
+                return attribs.get("value").map(std::convert::Into::into);
             }    
         }
     }

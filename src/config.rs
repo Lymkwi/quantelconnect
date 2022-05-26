@@ -11,7 +11,7 @@ pub struct Values {
 impl Values {
     pub fn get_user(&self) -> &str { &self.user }
     pub fn get_pass(&self) -> &str { &self.pass }
-    pub fn get_force(&self) -> bool { self.force }
+    pub const fn get_force(&self) -> bool { self.force }
 }
 
 // Builder paradigm
@@ -32,7 +32,7 @@ impl QBuilder {
         }
     }
     pub fn read_file(mut self, file: Option<&str>)
-        -> Result<QBuilder, Box<dyn std::error::Error>> {
+        -> Result<Self, Box<dyn std::error::Error>> {
         // Do the tini
         match file {
             Some(fname) => {
@@ -48,24 +48,24 @@ impl QBuilder {
             None => Ok(self)
         }
     }
-    pub fn set_user(mut self, user: Option<&str>) -> QBuilder {
+    pub fn set_user(mut self, user: Option<&str>) -> Self {
         if let Some(u) = user {
             self.user = Some(u.into());
         }
         self
     }
-    pub fn set_pass(mut self, pass: Option<&str>) -> QBuilder {
+    pub fn set_pass(mut self, pass: Option<&str>) -> Self {
         if let Some(p) = pass {
             self.pass = Some(p.into());
         }
         self
     }
-    pub fn set_force(mut self, force: bool) -> QBuilder {
+    pub const fn set_force(mut self, force: bool) -> Self {
         self.force = force;
         self
     }
-    pub fn new() -> QBuilder {
-        QBuilder { user: None, pass: None, force: false }
+    pub const fn new() -> Self {
+        Self { user: None, pass: None, force: false }
     }
 }
 
